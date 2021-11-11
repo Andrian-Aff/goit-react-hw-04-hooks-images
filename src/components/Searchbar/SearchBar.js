@@ -1,31 +1,38 @@
-import React, { Component } from 'react';
+import {useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import s from './SearchBar.module.css';
 
-class SearchBar extends Component {
-state = {
-    queryValue: '',
-}
+export default function SearchBar({onSubmit}) {
+    const[queryValue, setQueryValue] = useState('')
 
-handleRequestChange= e => {
-    this.setState({queryValue: e.currentTarget.value.toLowerCase()});
-};
+   const handleRequestChange = e =>  {
+    setQueryValue(e.currentTarget.value.toLowerCase())
+   } 
 
-handleOnSubmit = evt => {
+   const handleOnSubmit = evt => {
     evt.preventDefault();
-    if(this.state.queryValue.trim()==='') {
+    if(queryValue.trim()==='') {
         return toast('Input your request');
         
     }
-    this.props.onSubmit(this.state.queryValue);
-    this.setState({queryValue: ''});
+    onSubmit(queryValue);
+    setQueryValue('');
 }
 
-render() {
+// handleOnSubmit = evt => {
+//     evt.preventDefault();
+//     if(this.state.queryValue.trim()==='') {
+//         return toast('Input your request');
+        
+//     }
+//     this.props.onSubmit(this.state.queryValue);
+//     this.setState({queryValue: ''});
+// }
+
     return(
         <header className={s.Searchbar}>
-            <form className={s.SearchForm} onSubmit={this.handleOnSubmit}>
+            <form className={s.SearchForm} onSubmit={handleOnSubmit}>
                 <button type="submit" className={s.SearchForm__button}>
                     <span className={s.SearchForm__button__label}>Search</span>
                 </button>
@@ -34,14 +41,11 @@ render() {
                 type="text"
                 autoComplete="off"
                 autoFocus
-                value={this.state.queryValue}
+                value={queryValue}
                 placeholder="Search images and photos"
-                onChange={this.handleRequestChange}
+                onChange={handleRequestChange}
                 />
             </form>
         </header>
     )
 }
-}
-
-export default SearchBar;

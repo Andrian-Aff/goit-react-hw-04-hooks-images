@@ -1,5 +1,5 @@
 import './App.css';
-import React, {PureComponent } from 'react'
+import {useState, useEffect} from 'react'
 import { ToastContainer } from 'react-toastify';
 import SearchBar from './components/Searchbar'
 import ImageGallery from './components/ImageGallery'
@@ -9,81 +9,75 @@ import Button from './components/Button'
 import pixabayApi from './components/pixabayApi';
 import Error from './components/Error'
 
-
-class App extends PureComponent {
-state= {
-  error: null,
-  queryValue: '',
-  pictures:[],
-  page:1,
-  status: 'idle'
-}
-// shouldComponentUpdate(nextProps, nextState) {
-//   return nextState.state.id !== this.state.id
-// }
-handleSearchOnSubmit= value => {
-  // console.log('queryValue:', value)
-  this.setState({queryValue: value,
-    page:1, pictures:[]})
-  };
-  
-componentDidUpdate(prevProps, prevState) {
-  const prevValue = prevState.queryValue ;
-  const nextValue = this.state.queryValue;
-      if(prevValue !== nextValue ) {
-          // || prevState.page !== this.state.page
-          this.setState({ status: 'pending'});
-          this.renderPictures();
-  }
-}
-
-renderPictures = () => {
-  const { page, queryValue } = this.state;
-
-  pixabayApi.fetchPictures(queryValue, page)
-    .then(response =>
-      this.setState(prevState => ({ 
-          pictures: [...prevState.pictures, ...response.hits],
-          page: prevState.page + 1,
-          status: 'resolved'
-       }))
-    )
-    .catch(error => this.setState({ error,  status: 'rejected'}))
+const Status ={
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected'
 };
 
-render() {
-  const { pictures, error, status} = this.state;
-  // const{onOpen} = this.props
+export default function App() {
+  const [pictures, setPictures] = useState([]);
+  const [error, setError] = useState(null);
+  const [queryValue, setQueryValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState(Status.IDLE);
 
-  return (
-    <div className="App">
-      <SearchBar onSubmit={this.handleSearchOnSubmit}/>
-      <ToastContainer autoClose={3000} />
-    
-      {status === 'idle'&& (
-        <p className="welcomeText" >Input your query</p> )
-      }
-
-      {status === 'pending' && (<LoaderPend/>)  
-      }
-
-      {status === 'rejected' && (
-          <Error message={error.message}/>)
-      }
-
-      {status === 'resolved' && (
-        <>  
-          <ImageGallery 
-            pictures={pictures}
-            // onOpen={this.takeLargePicture}
-          /> 
-          <Button onLoadMore={this.renderPictures} />
-        </>)}
-    </div>
-  );
+  const handleSearchOnSubmit= value => {
+    setQueryValue(value);
+    setPage(1);
+    setPictures([]);
   }
+
+  useEffect(() => {
+    if(!queryValue) { 
+      return
+     }
+  // const renderPictures = () => {
+    setStatus(Status.PENDING);
+
+      pixabayApi
+        .fetchPictures(queryValue, page)
+        .then(response => {
+          setPictures(pictures=>[...pictures, ...response.hits]);
+          setStatus(Status.RESOLVED)
+          })
+        .catch(error => {
+          setError(error);
+          setStatus(Status.REJECTED)
+        })
+    
+        // renderPictures();
+    }, [queryValue, page]);
+
+    const onLoadMore = () => {
+      setPage(prevState => prevState + 1);
+    };
+
+    return (
+      <div className="App">
+        <SearchBar onSubmit={handleSearchOnSubmit}/>
+        <ToastContainer autoClose={3000} />
+      
+        {status === 'idle'&& (
+          <p className="welcomeText" >Input your query</p> )
+        }
+  
+        {status === 'pending' && (<LoaderPend/>)  
+        }
+  
+        {status === 'rejected' && (
+            <Error message={error.message}/>)
+        }
+  
+        {status === 'resolved' && (
+          <>  
+            <ImageGallery 
+              pictures={pictures}
+              // onOpen={ this.takeLargePicture}
+            /> 
+            <Button onLoadMore={onLoadMore} />
+          </>)}
+      </div>
+    );
 }
-
-
-
-export default App;

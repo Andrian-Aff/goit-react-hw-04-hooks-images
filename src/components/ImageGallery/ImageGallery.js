@@ -10,7 +10,7 @@ export default function ImageGallery({pictures}) {
                 key={picture.id}
                 src={picture.webformatURL}
                 alt={picture.tags}
-                largeImageUrl={()=>picture.largeImageURL()}
+                largeImageUrl={picture.largeImageURL}
                 />
             ))}
         </ul>
