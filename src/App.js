@@ -33,7 +33,6 @@ export default function App() {
     if(!queryValue) { 
       return
      }
-  // const renderPictures = () => {
     setStatus(Status.PENDING);
 
       pixabayApi
@@ -46,8 +45,6 @@ export default function App() {
           setError(error);
           setStatus(Status.REJECTED)
         })
-    
-        // renderPictures();
     }, [queryValue, page]);
 
     const onLoadMore = () => {

@@ -9,7 +9,7 @@ function fetchPictures(value, page) {
     if (response.ok) {
       return response.json();
     }
-  return Promise.reject(
+    return Promise.reject(
     new Error(`Nothing found for the your request ${value}`)
     );
   });
